@@ -1,0 +1,85 @@
+# This workflow validates, deploys, and runs the specified bundle
+# within a pre-production target named "dev".
+name: Dev deployment
+
+on:
+  push:
+    branches: [develop]
+  workflow_dispatch:
+    inputs:
+      bundle_env:
+        description: "The bundle environment to deploy to"
+        required: true
+        type: choice
+        options: ["dev"]
+
+# Only one run at a time
+concurrency: 1
+
+permissions:
+  id-token: write        # for OIDC to Azure
+  contents: write
+  pull_request: read
+
+jobs:
+  azure-oidc-auth:
+    name: Deploy bundle
+    runs-on: runner_dabs
+    environment: default
+
+    # These are constant for all steps in this job
+    env:
+      # Databricks workspace URL
+      DATABRICKS_HOST: ${{ vars.DATABRICKS_HOST_DEV }}
+      # Microsoft Entra tenant + client id for the SP
+      ARM_TENANT_ID:   ${{ vars.AZURE_TENANT_ID }}
+      ARM_CLIENT_ID:   ${{ vars.DATABRICKS_CLIENT_ID }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Login to Azure using GitHub OIDC as the Entra service principal
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id:      ${{ vars.DATABRICKS_CLIENT_ID }}
+          tenant-id:      ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      # Read the SP client secret from Key Vault and expose it as ARM_CLIENT_SECRET
+      - name: Read SP client secret from Key Vault
+        uses: azure/CLI@v2
+        with:
+          azcliversion: 2.62.0
+          inlineScript: |
+            secret=$(az keyvault secret show \
+              --vault-name avk-dabs-spn \
+              --name ${{ vars.SP_SECRET_NAME }} \
+              --query value -o tsv)
+
+            if [ -z "$secret" ]; then
+              echo "Secret not found in Key Vault" >&2
+              exit 1
+            fi
+
+            echo "ARM_CLIENT_SECRET=$secret" >> $GITHUB_ENV
+
+      - name: Setup Databricks CLI
+        uses: databricks/setup-cli@v3
+        with:
+          version: latest
+          step-debug: true
+
+      # At this point, for the Databricks CLI we have:
+      #   DATABRICKS_HOST      -> workspace URL
+      #   ARM_TENANT_ID        -> tenant ID
+      #   ARM_CLIENT_ID        -> Entra SP application ID
+      #   ARM_CLIENT_SECRET    -> Entra SP client secret
+      # Unified auth will automatically use Microsoft Entra SP auth.
+
+      - name: Validate bundle configuration
+        run: databricks bundle validate --target dev
+
+      - name: Deploy bundle
+        run: databricks bundle deploy --target dev

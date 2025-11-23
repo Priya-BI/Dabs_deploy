@@ -1,0 +1,78 @@
+# This workflow validates, deploys, and runs the specified bundle
+# within a pre-production target named "dev".
+name: 'Dev deployment'
+on : 
+  push:
+    branches: [develop]
+    workflow_dispatch:
+      inputs:
+        bundle_env:
+          description: 'The bundle environment to deploy to'
+          required: true
+          type: choice
+          options: ['dev']
+         
+# Ensure that only a single job or workflow using the same concurrency group
+# runs at a time.
+concurrency: 1
+permissions:
+  id-token: write
+  contents: write
+  pull_request: read
+
+# Trigger this workflow whenever a pull request is opened against the repo's
+# main branch or an existing pull request's head branch is updated.
+
+jobs:
+  # Used by the "pipeline_update" job to deploy the bundle.
+  # Bundle validation is automatically performed as part of this deployment.
+  # If validation fails, this workflow fails.
+  azure-oidc-auth:
+    name: 'Deploy bundle'
+    runs-on: runner_dabs
+    environment: default
+
+    steps:
+      - name: 'Checkout code'
+        uses: actions/checkout@v3
+      # Check out this repo, so that this workflow can access it.
+      # Download the Databricks CLI.
+      # See https://github.com/databricks/setup-cli for documentation.
+      - name: "read secret from key vault"
+        uses: azure/azure-key-vault-secrets@v1
+        with:
+          key-vault: 'avk-dabs-spn'
+          vault_client_id: ${{ var.DATABRICKS_CLIENT_ID }}
+          vault_tenant_id: ${{ var.AZURE_TENANT_ID }}
+          secret_names: |
+            ${{ var.SP_SECRET_NAME }}
+
+      - name: Azure-oidc-login
+        uses: azure/oidc-login@v1
+        with:
+          client-id: ${{ var.DATABRICKS_CLIENT_ID}}
+          tenant-id: ${{ var.AZURE_TENANT_ID }}
+          subscription-id: ${{ var.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Setup Databricks CLI
+        uses: databricks/setup-cli@main
+        with:
+         tool: databricks-cli
+         version: 'latest'
+         step-debug: true
+      # Deploy the Databricks bundle to the "dev" target.
+          # Deploy the bundle to the "dev" target as defined
+      # in the bundle's settings file.
+      - name: configure databricks auth
+        run: 
+          export DATABRICKS_HOST= ${{ var.DATABRICKS_HOST_DEV }}
+          export DATABRICKS_TENANT_ID= ${{ var.AZURE_TENANT_ID }}
+         
+      - name: validates bundle configure
+        run: 
+          databricks bundle validate --target dev
+      - name: deploy bundle
+        run:
+         databricks bundle deploy --target dev
+        
+       

@@ -1,0 +1,41 @@
+# This is a Databricks asset bundle definition for Dabs_1.
+# See https://docs.databricks.com/dev-tools/bundles/index.html for documentation.
+bundle:
+  name: Dabs_1
+  uuid: dc74fc59-c671-4635-9d66-708142239c95
+
+#artifacts:
+ # python_artifact:
+  #  type: whl
+   # build: uv build --wheel
+
+include:
+  - resources/*.yml
+  - resources/*/*.yml
+exclude:
+  - "workflows/workflow.yml"
+  - "workflows/workflow2.yml"
+targets:
+  dev:
+    # The default target uses 'mode: development' to create a development copy.
+    # - Deployed resources get prefixed with '[dev my_user_name]'
+    # - Any job schedules and triggers are paused by default.
+    # See also https://docs.databricks.com/dev-tools/bundles/deployment-modes.html.
+    mode: development
+    default: true
+    workspace:
+      host: https://adb-4472422858113033.13.azuredatabricks.net
+      profile: dev
+      #workspace:
+      #host :  ${{ env.DATABRICKS_HOST_DEV }}
+      root_path:  ~/training2/${bundle.name}/${bundle.target}
+
+   #prod:
+   # mode: production
+    #workspace:
+     # host: https://adb-4472422858113033.13.azuredatabricks.net
+      # We explicitly deploy to /Workspace/Users/ankur.sinha@adage.se to make sure we only have a single copy.
+      #root_path: /Workspace/Users/ankur.sinha@adage.se/.bundle/${bundle.name}/${bundle.target}
+    permissions:
+      - user_name: ankur.sinha@adage.se
+        level: CAN_MANAGE

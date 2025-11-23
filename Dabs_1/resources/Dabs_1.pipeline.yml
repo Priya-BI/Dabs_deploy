@@ -1,0 +1,15 @@
+# The main pipeline for Dabs_1
+resources:
+  pipelines:
+    Dabs_1_pipeline:
+      name: Dabs_1_pipeline
+      ## Catalog is required for serverless compute
+      catalog: main
+      schema: Dabs_1_${bundle.target}
+      serverless: true
+      libraries:
+        - notebook:
+            path: ../src/pipeline.ipynb
+
+      configuration:
+        bundle.sourcePath: ${workspace.file_path}/src
