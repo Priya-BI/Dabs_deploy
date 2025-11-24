@@ -42,7 +42,7 @@ jobs:
       # Deploy the bundle to the "qa" target as defined
       # in the bundle's settings file.
       - run: databricks bundle deploy
-        working-directory: .
+        working-directory: ./Dabs_1
         env:          
           # below as described here: https://learn.microsoft.com/en-us/azure/databricks/dev-tools/auth/oauth-m2m
           # below we use params for machine to machine auth based on account ID and token 
@@ -83,9 +83,9 @@ jobs:
         working-directory: .
         env:
           DATABRICKS_BUNDLE_ENV: dev
-         # DATABRICKS_TOKEN: ${{ secrets.SP_TOKEN }}
+         # DATABRICKS_TOKEN: ${{ vars.SP_TOKEN }}
          # DATABRICKS_ACCOUNT_ID: ${{ secrets.DB_USER }}
-          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST_DEV }}
-          DATABRICKS_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          DATABRICKS_CLIENT_ID: ${{ secrets.DATABRICKS_CLIENT_ID }}
-          DATABRICKS_CLIENT_SECRET: ${{ secrets.SP_SECRET }}
+          DATABRICKS_HOST: ${{ vars.DATABRICKS_HOST_DEV }}
+          DATABRICKS_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+          DATABRICKS_CLIENT_ID: ${{ vars.DATABRICKS_CLIENT_ID }}
+          DATABRICKS_CLIENT_SECRET: ${{ vars.SP_SECRET }}
