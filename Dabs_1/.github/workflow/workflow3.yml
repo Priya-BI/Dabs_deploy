@@ -24,6 +24,7 @@ jobs:
     name: "Deploy bundle"
     #runs-on: runner_dabs
     runs-on: ubuntu-latest
+    
     environment: default
 
     steps:
