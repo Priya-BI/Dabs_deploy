@@ -11,7 +11,7 @@ name: "Dev deployment"
 on:
   push:
     branches:
-      - develop
+      - main
   workflow_call:   # 👈 makes this callable from other workflows
      
 #  pull_request:
@@ -58,7 +58,7 @@ jobs:
   # Validate, deploy, and then run the bundle.
   pipeline_update:
     name: "Run pipeline update"
-    runs-on: runner_dabs
+    runs-on: ubuntu-latest
     environment: default
 
     # Run the "deploy" job first.
@@ -75,7 +75,7 @@ jobs:
         with:
           #tool: databricks-cli
           version: 'latest'
-           #step-debug: true
+          #step-debug: true
 
       # Run the Databricks workflow named "ae_sim_pipeline " as defined in the
       # bundle that was just deployed.
