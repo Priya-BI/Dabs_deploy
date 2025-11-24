@@ -12,6 +12,8 @@ on:
   push:
     branches:
       - develop
+  workflow_call:   # 👈 makes this callable from other workflows
+     
 #  pull_request:
  #   types:
   #    - opened
