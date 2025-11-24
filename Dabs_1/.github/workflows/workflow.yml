@@ -73,9 +73,9 @@ jobs:
       - name: Setup Databricks CLI
         uses: databricks/setup-cli@main
         with:
-         tool: databricks-cli
-         version: 'latest'
-         step-debug: true
+          #tool: databricks-cli
+          version: 'latest'
+           #step-debug: true
 
       # Run the Databricks workflow named "ae_sim_pipeline " as defined in the
       # bundle that was just deployed.
