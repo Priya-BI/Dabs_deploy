@@ -80,7 +80,7 @@ jobs:
       # Run the Databricks workflow named "ae_sim_pipeline " as defined in the
       # bundle that was just deployed.
       - run: databricks bundle run ae_sim_pipeline  --refresh-all
-        working-directory: .
+        working-directory: ./Dabs_1
         env:
           DATABRICKS_BUNDLE_ENV: dev
          # DATABRICKS_TOKEN: ${{ vars.SP_TOKEN }}
