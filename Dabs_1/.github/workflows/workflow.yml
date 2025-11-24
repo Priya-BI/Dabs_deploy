@@ -11,7 +11,7 @@ name: "Dev deployment"
 on:
   pull_request:
     branches:
-      - main
+        - main
   workflow_call:   # 👈 makes this callable from other workflows
      
 #  pull_request:
