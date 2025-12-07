@@ -10,8 +10,12 @@ name: "Dev deployment"
 # main branch or an existing pull request's head branch is updated.
 on:
   pull_request:
-    branches:
-        - main
+     branches:
+      - main
+     types:
+        - opened
+        - synchronize
+ 
   workflow_call:   # 👈 makes this callable from other workflows
      
 #  pull_request:
